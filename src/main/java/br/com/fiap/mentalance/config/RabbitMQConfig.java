@@ -3,17 +3,17 @@ package br.com.fiap.mentalance.config;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuração do RabbitMQ.
  * Define filas e conversores de mensagens.
- * Só é ativada se spring.rabbitmq.host estiver configurado.
+ * Só é ativada se spring.rabbitmq.host estiver configurado e não vazio.
  */
 @Configuration
-@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
+@ConditionalOnExpression("'${spring.rabbitmq.host:}' != ''")
 public class RabbitMQConfig {
 
     /**

@@ -4,7 +4,7 @@ import br.com.fiap.mentalance.config.RabbitMQConfig;
 import br.com.fiap.mentalance.dto.CheckinMessageDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
  * Pode ser usado para notificações, logs, integrações externas, etc.
  * 
  * Este listener só será ativado se:
- * 1. spring.rabbitmq.host estiver configurado
+ * 1. spring.rabbitmq.host estiver configurado e não vazio
  * 2. A conexão com RabbitMQ for bem-sucedida
  */
 @Component
 @Slf4j
-@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
+@ConditionalOnExpression("'${spring.rabbitmq.host:}' != ''")
 public class CheckinMessageListener {
 
     /**

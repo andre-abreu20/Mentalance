@@ -5,17 +5,17 @@ import br.com.fiap.mentalance.dto.CheckinMessageDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 
 /**
  * Serviço para enviar mensagens ao RabbitMQ.
- * Desabilitado automaticamente se spring.rabbitmq.host não estiver configurado.
+ * Desabilitado automaticamente se spring.rabbitmq.host não estiver configurado ou estiver vazio.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
+@ConditionalOnExpression("'${spring.rabbitmq.host:}' != ''")
 public class MessageProducer {
 
     private final RabbitTemplate rabbitTemplate;
