@@ -5,13 +5,10 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.util.StringUtils;
-
-import jakarta.annotation.PostConstruct;
 
 /**
  * Configuração avançada do RabbitMQ para lidar com problemas de conexão.
@@ -20,10 +17,10 @@ import jakarta.annotation.PostConstruct;
  */
 @Configuration
 @Slf4j
-@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
+@ConditionalOnExpression("'${spring.rabbitmq.host:}' != ''")
 public class RabbitMQConnectionConfig {
 
-    @Value("${spring.rabbitmq.host:}")
+    @Value("${spring.rabbitmq.host}")
     private String host;
 
     @Value("${spring.rabbitmq.port:5672}")
@@ -43,18 +40,6 @@ public class RabbitMQConnectionConfig {
 
     @Value("${spring.rabbitmq.ssl.algorithm:TLSv1.2}")
     private String sslAlgorithm;
-
-    /**
-     * Valida se o RabbitMQ está configurado corretamente.
-     * Se o host estiver vazio, lança uma exceção que impede a criação dos beans.
-     */
-    @PostConstruct
-    public void validateConfiguration() {
-        if (!StringUtils.hasText(host)) {
-            log.info("RabbitMQ host não configurado (vazio). Desabilitando RabbitMQ.");
-            throw new IllegalStateException("RabbitMQ host não configurado. Para habilitar, configure RABBITMQ_HOST. Para desabilitar completamente, remova spring.rabbitmq.host do application.properties.");
-        }
-    }
 
     /**
      * Configura a ConnectionFactory com tratamento de erros.
