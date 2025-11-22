@@ -22,8 +22,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- Por padrão, pula os testes durante o build (útil para deploy) -->
-        <!-- Para executar testes: mvn test ou mvn verify -Dskip.tests=false -->
-        <skip.tests>true</skip.tests>
+        <!-- Para executar testes: mvn test ou mvn verify -DskipTests=false -->
+        <skipTests>true</skipTests>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <dependencies>
@@ -129,8 +130,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- Pula os testes por padrão durante o build -->
-                    <!-- Para executar os testes localmente, use: mvn test ou mvn verify -DskipTests=false -->
-                    <skipTests>${skip.tests}</skipTests>
+                    <!-- Para executar os testes localmente, use: mvn test -DskipTests=false -->
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
                 </configuration>
             </plugin>
         </plugins>
