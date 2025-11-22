@@ -1,0 +1,8 @@
+package br.com.fiap.mentalance.exception;
+
+public class NegocioException extends RuntimeException {
+    public NegocioException(String message) {
+        super(message);
+    }
+}
+

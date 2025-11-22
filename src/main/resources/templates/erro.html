@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="fragments/base :: layout(~{::title}, ~{::body})">
+<head>
+    <title>Erro</title>
+</head>
+<body>
+<section class="card">
+    <h1>Ops...</h1>
+    <p th:text="${mensagemErro}">Ocorreu um erro.</p>
+    <a th:href="@{/dashboard}">Voltar</a>
+</section>
+</body>
+</html>
+

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="fragments/base :: layout(~{::title}, ~{::body})">
+<head>
+    <title th:text="#{admin.title}">Admin</title>
+</head>
+<body>
+<section class="grid grid--2">
+    <div class="card">
+        <h2 th:text="#{admin.users}">Usuários</h2>
+        <p>
+            <span th:text="#{admin.totalUsersLabel}">Total:</span>
+            <strong th:text="${totalUsuarios}">0</strong>
+        </p>
+    </div>
+    <div class="card">
+        <h2 th:text="#{admin.analytics}">Estatísticas</h2>
+        <p>
+            <span th:text="#{admin.totalCheckinsLabel}">Total de check-ins:</span>
+            <strong th:text="${totalCheckins}">0</strong>
+        </p>
+        <p>
+            <span th:text="#{admin.energyAverageLabel}">Média de energia:</span>
+            <strong th:text="${#numbers.formatDecimal(mediaEnergia,1,1)}">0</strong>
+        </p>
+        <p>
+            <span th:text="#{admin.sleepAverageLabel}">Média de sono:</span>
+            <strong th:text="${#numbers.formatDecimal(mediaSono,1,1)}">0</strong>
+        </p>
+    </div>
+</section>
+
+<section class="card">
+    <h2 th:text="#{admin.latestCheckins}">Últimos check-ins</h2>
+    <table>
+        <thead>
+        <tr>
+            <th th:text="#{label.user}">Usuário</th>
+            <th th:text="#{label.date}">Data</th>
+            <th th:text="#{label.mood}">Humor</th>
+            <th th:text="#{label.energy}">Energia</th>
+            <th th:text="#{label.sleep}">Sono</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="checkin : ${checkinsRecentes}">
+            <td th:text="${checkin.usuario.nome}">Nome</td>
+            <td th:text="${#temporals.format(checkin.data, 'dd/MM/yyyy')}">01/01/2025</td>
+            <td th:text="${checkin.humor}">BEM</td>
+            <td th:text="${checkin.energia}">7</td>
+            <td th:text="${checkin.sono}">7</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2 th:text="#{admin.users}">Usuários</h2>
+    <table>
+        <thead>
+        <tr>
+            <th th:text="#{label.name}">Nome</th>
+            <th th:text="#{label.email}">Email</th>
+            <th th:text="#{label.profile}">Perfil</th>
+            <th th:text="#{label.registration}">Cadastro</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="usuario : ${usuarios}">
+            <td th:text="${usuario.nome}">Nome</td>
+            <td th:text="${usuario.email}">email@example.com</td>
+            <td th:text="${usuario.perfil}">USUARIO</td>
+            <td th:text="${#temporals.format(usuario.criadoEm, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>
+

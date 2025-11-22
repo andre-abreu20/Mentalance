@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:replace="fragments/base :: layout(~{::title}, ~{::body})"
+>
+  <head>
+    <title th:text="#{home.pageTitle}">Bem-vindo à Mentalance</title>
+  </head>
+  <body>
+    <style>
+      body {
+        background: #f4f5fb;
+      }
+
+      .landing-hero {
+        width: 100%;
+        position: relative;
+        min-height: 65vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        overflow: hidden;
+        box-shadow: inset 10px 10px 15px rgba(0, 0, 0, 0.5);
+        background: url("[[@{/images/landing/1.svg}]]") center/cover no-repeat;
+      }
+
+      .landing-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(15, 23, 42, 0.55) 0%,
+          rgba(15, 23, 42, 0.25) 65%,
+          rgba(15, 23, 42, 0.6) 100%
+        );
+        box-shadow: inset 0 80px 120px rgba(15, 23, 42, 0.35);
+        z-index: 0;
+      }
+
+      .landing-hero .container {
+        position: relative;
+        z-index: 1;
+      }
+
+      .landing-hero .badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(6px);
+      }
+
+      .landing-hero h1 {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .landing-hero p.lead {
+        max-width: 540px;
+      }
+
+      .hero-card {
+        max-width: 420px;
+        margin: auto;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        color: #1f2937;
+      }
+
+      .landing-feature-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(
+          135deg,
+          rgba(79, 70, 229, 0.12),
+          rgba(45, 212, 191, 0.12)
+        );
+        color: #4f46e5;
+        font-size: 1.8rem;
+      }
+
+      .landing-section-title {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .benefit-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 18px 35px rgba(79, 70, 229, 0.08);
+        background: #ffffff;
+      }
+
+      .testimonial-card {
+        border-radius: 20px;
+        border: none;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      .metrics-pill {
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.12);
+        color: #4f46e5;
+        font-weight: 600;
+      }
+
+      .cta-section {
+        background: linear-gradient(
+          115deg,
+          rgba(79, 70, 229, 0.92),
+          rgba(45, 212, 191, 0.78)
+        );
+        border-radius: 28px;
+        color: #fff;
+      }
+
+      .hero-buttons .btn {
+        min-width: 180px;
+        font-weight: 600;
+      }
+
+      .hero-buttons a,
+      .cta-section a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.9rem 1.9rem;
+        border-radius: 999px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease,
+          background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .hero-buttons a.btn-light,
+      .cta-section a.btn-light {
+        background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.85));
+        color: #4338ca !important;
+        box-shadow: 0 12px 30px rgba(67, 56, 202, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+      }
+
+      .hero-buttons a.btn-outline-light,
+      .cta-section a.btn-outline-light {
+        border: 1.5px solid rgba(255, 255, 255, 0.7);
+        color: #ffffff !important;
+        background: transparent;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+      }
+
+      .hero-buttons a.btn-light:hover,
+      .cta-section a.btn-light:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(67, 56, 202, 0.35);
+        background: linear-gradient(135deg, #ffffff, rgba(250, 250, 255, 0.92));
+      }
+
+      .hero-buttons a.btn-outline-light:hover,
+      .cta-section a.btn-outline-light:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.35);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .hero-buttons a:focus,
+      .cta-section a:focus {
+        outline: 3px solid rgba(99, 102, 241, 0.45);
+        outline-offset: 4px;
+      }
+
+      .divider {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, #4f46e5, #22d3ee);
+        border-radius: 999px;
+        margin: 1.5rem 0;
+      }
+
+      .section-container {
+        max-width: 1200px;
+        margin: 60px auto;
+        padding: 0 1.5rem;
+      }
+
+      .section-wide {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .insights-section {
+        position: relative;
+        background: url("[[@{/images/landing/2.svg}]]") center/cover no-repeat;
+        color: #fff;
+        padding: 5rem 0;
+      }
+
+      .insights-section::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          rgba(15, 23, 42, 0.82),
+          rgba(15, 23, 42, 0.55)
+        );
+        box-shadow: inset 0 60px 120px rgba(15, 23, 42, 0.45);
+        z-index: 0;
+      }
+
+      .insights-section .content-wrapper {
+        position: relative;
+        z-index: 1;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      .insights-section p {
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .insights-section li span {
+        color: rgba(255, 255, 255, 0.85);
+      }
+    </style>
+
+    <section class="landing-hero py-5 py-md-0">
+      <div class="container py-5">
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 100px;
+          "
+        >
+          <div class="col-lg-7" style="margin-bottom: 100px">
+            <h1 class="display-4 mb-3" th:text="#{home.hero.title}">
+              Sua saúde mental em harmonia com o cotidiano
+            </h1>
+            <p class="lead mb-4" th:text="#{home.hero.lead}">
+              Acompanhe seus check-ins emocionais, receba insights
+              personalizados com IA e visualize sua evolução em dashboards
+              intuitivos. Uma rotina equilibrada começa com autocuidado diário.
+            </p>
+            <div class="divider"></div>
+            <div class="d-flex flex-column flex-md-row gap-3 hero-buttons">
+              <a
+                class="btn btn-light text-primary-emphasis shadow-sm"
+                th:href="@{/register}"
+                sec:authorize="isAnonymous()"
+              >
+                <span th:text="#{home.hero.cta.signup}"
+                  >Quero criar minha conta</span
+                >
+              </a>
+              <a
+                class="btn btn-outline-light"
+                th:href="@{/login}"
+                sec:authorize="isAnonymous()"
+              >
+                <span th:text="#{home.hero.cta.login}">Já sou usuário(a)</span>
+              </a>
+              <a
+                class="btn btn-light text-primary-emphasis shadow-sm"
+                th:href="@{/dashboard}"
+                sec:authorize="isAuthenticated()"
+              >
+                <span th:text="#{home.hero.cta.dashboard}"
+                  >Ir para o meu painel</span
+                >
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5 bg-light" style="margin-top: 50px">
+      <div class="section-container py-4">
+        <div class="text-center mb-5">
+          <h2
+            class="landing-section-title mb-3"
+            th:text="#{home.features.title}"
+          >
+            Ferramentas criadas para cuidar de você
+          </h2>
+          <div class="divider mx-auto"></div>
+          <p
+            class="text-muted mx-auto"
+            style="max-width: 720px"
+            th:text="#{home.features.subtitle}"
+          >
+            Combinamos tecnologia, ciência de dados e empatia para que sua
+            jornada de bem-estar seja acolhedora e eficaz.
+          </p>
+        </div>
+        <div
+          style="display: flex; justify-content: center; align-items: center flex-direction: column; gap: 10px;"
+        >
+          <div class="col">
+            <div class="card h-100 benefit-card p-4">
+              <div class="landing-feature-icon mb-3">
+                <i class="bi bi-chat-square-heart-fill"></i>
+              </div>
+              <h5
+                class="fw-semibold mb-2"
+                th:text="#{home.features.card1.title}"
+              >
+                Check-ins inteligentes
+              </h5>
+              <p class="text-muted mb-0" th:text="#{home.features.card1.text}">
+                Registre humor, energia e sono em poucos cliques e visualize
+                tendências de forma clara.
+              </p>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100 benefit-card p-4">
+              <div class="landing-feature-icon mb-3">
+                <i class="bi bi-stars"></i>
+              </div>
+              <h5
+                class="fw-semibold mb-2"
+                th:text="#{home.features.card2.title}"
+              >
+                Análises com IA
+              </h5>
+              <p class="text-muted mb-0" th:text="#{home.features.card2.text}">
+                Receba insights contextualizados e recomendações para o seu dia,
+                com base nas informações compartilhadas.
+              </p>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100 benefit-card p-4">
+              <div class="landing-feature-icon mb-3">
+                <i class="bi bi-speedometer2"></i>
+              </div>
+              <h5
+                class="fw-semibold mb-2"
+                th:text="#{home.features.card3.title}"
+              >
+                Dashboard completo
+              </h5>
+              <p class="text-muted mb-0" th:text="#{home.features.card3.text}">
+                Relatórios semanais, gráficos dinâmicos e histórico consolidado
+                para acompanhar sua evolução emocional.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="insights-section">
+      <div class="content-wrapper text-center text-lg-start">
+        <span
+          class="badge bg-light text-primary fw-semibold mb-3"
+          th:text="#{home.insights.badge}"
+        >
+          Dados que trabalham por você
+        </span>
+        <h2
+          class="landing-section-title display-4 fw-semibold mb-4"
+          th:text="#{home.insights.title}"
+        >
+          Visualize seu bem-estar com clareza
+        </h2>
+        <p class="fs-5 mb-4" th:text="#{home.insights.description}">
+          Acompanhe o histórico de check-ins, identifique padrões de humor e
+          avalie a qualidade do sono ao longo das semanas. Visualizações simples
+          e poderosas estimulam decisões mais conscientes e hábitos saudáveis.
+        </p>
+        <ul class="list-unstyled">
+          <li class="d-flex align-items-start mb-3">
+            <i class="bi bi-graph-up-arrow text-white me-3 fs-4"></i>
+            <span th:text="#{home.insights.item1}"
+              >Relatórios semanais que destacam conquistas e oportunidades de
+              autocuidado.</span
+            >
+          </li>
+          <li class="d-flex align-items-start mb-3">
+            <i class="bi bi-layers-fill text-white me-3 fs-4"></i>
+            <span th:text="#{home.insights.item2}"
+              >Divisão de dados por períodos, sentimentos predominantes e
+              indicadores de energia.</span
+            >
+          </li>
+          <li class="d-flex align-items-start">
+            <i class="bi bi-shield-check text-white me-3 fs-4"></i>
+            <span th:text="#{home.insights.item3}"
+              >Segurança e privacidade: seus dados são protegidos e utilizados
+              apenas para o seu bem-estar.</span
+            >
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="py-5 bg-light">
+      <div class="section-container py-4">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card testimonial-card p-4">
+              <div class="d-flex align-items-center mb-3">
+                <img
+                  th:src="@{/images/landing/3.svg}"
+                  alt="Retrato de usuária"
+                  class="rounded-circle me-3"
+                  style="width: 56px; height: 56px; object-fit: cover"
+                />
+                <div>
+                  <h6 class="mb-0 fw-semibold">Ana Luiza, 27 anos</h6>
+                  <small class="text-muted">Marketing e comunicação</small>
+                </div>
+              </div>
+              <p
+                class="mb-0 text-secondary"
+                th:text="#{home.testimonials.quote1}"
+              >
+                “Com a Mentalance consegui entender gatilhos emocionais e
+                ajustar minha rotina. Os insights de IA são como ter uma
+                conversa honesta comigo mesma todos os dias.”
+              </p>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card testimonial-card p-4">
+              <div class="d-flex align-items-center mb-3">
+                <img
+                  th:src="@{/images/landing/4.svg}"
+                  alt="Retrato de usuário"
+                  class="rounded-circle me-3"
+                  style="width: 56px; height: 56px; object-fit: cover"
+                />
+                <div>
+                  <h6 class="mb-0 fw-semibold">Gabriel Souza, 34 anos</h6>
+                  <small class="text-muted">Gestor de pessoas</small>
+                </div>
+              </div>
+              <p
+                class="mb-0 text-secondary"
+                th:text="#{home.testimonials.quote2}"
+              >
+                “Uso o painel administrativo para apoiar meu time. Dá para ver
+                tendências, agir rápido e incentivar novas práticas de cuidado
+                coletivo.”
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5">
+      <div class="section-container">
+        <div class="cta-section shadow-lg" style="padding: 30px">
+          <div class="row align-items-center gy-4">
+            <div class="col-lg-8">
+              <h2 class="display-6 fw-semibold" th:text="#{home.cta.title}">
+                Pronto(a) para transformar sua rotina?
+              </h2>
+              <p class="lead mb-0" th:text="#{home.cta.subtitle}">
+                Inicie seus check-ins hoje mesmo e descubra como pequenas
+                mudanças podem gerar grandes resultados.
+              </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+              <a
+                class="btn btn-light text-primary-emphasis btn-lg w-100 mb-3"
+                th:href="@{/register}"
+                sec:authorize="isAnonymous()"
+              >
+                <span th:text="#{home.cta.btn.signup}"
+                  >Criar conta gratuita</span
+                >
+              </a>
+              <a
+                class="btn btn-outline-light btn-lg w-100"
+                th:href="@{/login}"
+                sec:authorize="isAnonymous()"
+              >
+                <span th:text="#{home.cta.btn.login}">Fazer login</span>
+              </a>
+              <a
+                class="btn btn-light text-primary-emphasis btn-lg w-100"
+                th:href="@{/dashboard}"
+                sec:authorize="isAuthenticated()"
+              >
+                <span th:text="#{home.cta.btn.dashboard}"
+                  >Acessar meu dashboard</span
+                >
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

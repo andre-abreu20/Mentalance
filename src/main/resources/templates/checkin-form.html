@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="fragments/base :: layout(~{::title}, ~{::body})">
+<head>
+    <title th:text="#{checkin.title}">Check-in</title>
+</head>
+<body>
+<style>
+    .checkin-wrapper {
+        background: #f5f6fa;
+        border-radius: 24px;
+        padding: 2.5rem 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .checkin-wrapper {
+            padding: 3rem;
+        }
+    }
+
+    .checkin-card {
+        max-width: 780px;
+        width: 100%;
+        border-radius: 18px;
+    }
+
+    .checkin-card .form-control,
+    .checkin-card .form-select,
+    .checkin-card .form-range {
+        border-radius: 12px;
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+    }
+</style>
+
+<section class="checkin-wrapper mx-auto">
+    <div class="card shadow-lg border-0 mx-auto checkin-card">
+        <div class="card-body p-4 p-md-5">
+            <h1 class="h2 fw-bold text-dark mb-2" th:text="#{checkin.title}">Novo check-in</h1>
+            <p class="text-muted mb-4" th:text="#{checkin.subtitle}">
+                Registre rapidamente como você está se sentindo hoje para acompanhar seu bem-estar.
+            </p>
+
+            <form th:action="@{/checkins}" th:object="${checkin}" method="post" class="needs-validation" novalidate>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="humor" th:text="#{checkin.mood}">Como você está se sentindo hoje?</label>
+                    <select id="humor" class="form-select form-select-lg" th:field="*{humor}">
+                        <option value="" disabled selected th:text="#{checkin.mood.select}">Selecione</option>
+                        <option th:each="humor : ${humores}"
+                                th:value="${humor}"
+                                th:text="${humor == T(br.com.fiap.mentalance.model.EstadoHumor).MUITO_BEM ? '😃 Muito bem' :
+                                         humor == T(br.com.fiap.mentalance.model.EstadoHumor).BEM ? '🙂 Bem' :
+                                         humor == T(br.com.fiap.mentalance.model.EstadoHumor).NEUTRO ? '😐 Neutro' :
+                                         humor == T(br.com.fiap.mentalance.model.EstadoHumor).CANSADO ? '😓 Cansado' :
+                                         '😞 Estressado'}">
+                        </option>
+                    </select>
+                    <div class="text-danger small mt-2" th:if="${#fields.hasErrors('humor')}" th:errors="*{humor}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label fw-semibold mb-0" for="energia" th:text="#{checkin.energy}">Nível de energia</label>
+                        <span class="badge bg-primary-subtle text-primary-emphasis" id="energiaValue"
+                              th:text="*{energia} ?: 5">5</span>
+                    </div>
+                    <input type="range" class="form-range" id="energia" min="0" max="10" th:field="*{energia}">
+                    <div class="help-text text-muted" th:text="#{checkin.energy.help}">0 = sem energia, 10 = energia máxima.</div>
+                    <div class="text-danger small mt-2" th:if="${#fields.hasErrors('energia')}" th:errors="*{energia}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label fw-semibold mb-0" for="sono" th:text="#{checkin.sleep}">Qualidade do sono</label>
+                        <span class="badge bg-success-subtle text-success-emphasis" id="sonoValue"
+                              th:text="*{sono} ?: 5">5</span>
+                    </div>
+                    <input type="range" class="form-range" id="sono" min="0" max="10" th:field="*{sono}">
+                    <div class="help-text text-muted" th:text="#{checkin.sleep.help}">0 = péssima, 10 = excelente.</div>
+                    <div class="text-danger small mt-2" th:if="${#fields.hasErrors('sono')}" th:errors="*{sono}"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label fw-semibold" for="contexto" th:text="#{checkin.notes}">Observações</label>
+                    <textarea id="contexto"
+                              class="form-control"
+                              rows="4"
+                              th:placeholder="#{checkin.notes.placeholder}"
+                              th:field="*{contexto}"></textarea>
+                    <div class="text-danger small mt-2" th:if="${#fields.hasErrors('contexto')}" th:errors="*{contexto}"></div>
+                </div>
+
+                <div class="d-grid d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary fw-semibold w-100 w-md-auto px-4 py-2"
+                            th:text="#{checkin.submit}">
+                        Enviar check-in
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+    (() => {
+        const energiaRange = document.getElementById('energia');
+        const energiaValue = document.getElementById('energiaValue');
+        const sonoRange = document.getElementById('sono');
+        const sonoValue = document.getElementById('sonoValue');
+
+        const updateBadge = (range, badge) => {
+            if (!range || !badge) return;
+            const refresh = () => badge.textContent = range.value;
+            refresh();
+            range.addEventListener('input', refresh);
+        };
+
+        updateBadge(energiaRange, energiaValue);
+        updateBadge(sonoRange, sonoValue);
+    })();
+</script>
+</body>
+</html>
+

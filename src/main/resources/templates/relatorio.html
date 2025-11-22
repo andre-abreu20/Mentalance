@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="fragments/base :: layout(~{::title}, ~{::body})">
+<head>
+    <title th:text="#{report.title}">Relatório</title>
+</head>
+<body>
+<section class="card">
+    <h1 th:text="#{report.title}">Relatório</h1>
+    <form th:action="@{/relatorio}" method="get" class="grid grid--2">
+        <div>
+            <label for="inicio" th:text="#{report.period.start}">Período (Início)</label>
+            <input type="date" id="inicio" name="inicio" th:value="${inicio}">
+        </div>
+        <div>
+            <label for="fim" th:text="#{report.period.end}">Período (Fim)</label>
+            <input type="date" id="fim" name="fim" th:value="${fim}">
+        </div>
+        <div>
+            <button type="submit" th:text="#{report.filters}">Filtrar</button>
+        </div>
+    </form>
+</section>
+
+<section class="card">
+    <h2 th:text="#{dashboard.weeklyReport}">Relatório semanal</h2>
+    <canvas id="chartEvolucao"></canvas>
+</section>
+
+<section class="card">
+    <h2 th:text="#{checkin.history}">Histórico</h2>
+    <table>
+        <thead>
+        <tr>
+            <th th:text="#{label.date}">Data</th>
+            <th th:text="#{label.mood}">Humor</th>
+            <th th:text="#{label.energy}">Energia</th>
+            <th th:text="#{label.sleep}">Sono</th>
+            <th th:text="#{label.notes}">Observações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="checkin : ${checkins}">
+            <td th:text="${#temporals.format(checkin.data, 'dd/MM/yyyy')}">01/01/2025</td>
+            <td th:text="${checkin.humor}">BEM</td>
+            <td th:text="${checkin.energia}">7</td>
+            <td th:text="${checkin.sono}">7</td>
+            <td th:text="${checkin.contexto}">Notas</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+
+<script th:inline="javascript">
+    const checkins = /*[[${checkinsGrafico}]]*/ [];
+    const labels = checkins.map(c => c.data);
+    const energia = checkins.map(c => c.energia);
+    const sono = checkins.map(c => c.sono);
+
+    if (labels.length > 0) {
+        const ctx = document.getElementById('chartEvolucao');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: /*[[#{chart.energy}]]*/ 'Energia',
+                        data: energia,
+                        borderColor: '#4F46E5',
+                        tension: 0.3
+                    },
+                    {
+                        label: /*[[#{chart.sleep}]]*/ 'Sono',
+                        data: sono,
+                        borderColor: '#22D3EE',
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 10
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="fragments/base :: layout(~{::title}, ~{::body})"
+>
+  <head>
+    <title th:text="#{dashboard.title}">Dashboard</title>
+  </head>
+  <body>
+    <section class="grid grid--2">
+      <div class="card">
+        <h2 th:text="#{dashboard.welcome(${usuario.nome})}">Olá</h2>
+        <p th:text="#{dashboard.subtitle}">Resumo semanal</p>
+        <p th:if="${resumo.humorPredominante != null}">
+          <span th:text="#{dashboard.moodHighlight}">Humor predominante</span>:
+          <strong th:text="${resumo.humorPredominante}">NEUTRO</strong>
+        </p>
+        <p>
+          <span th:text="#{dashboard.energyAverage}">Média de energia</span>:
+          <strong th:text="${#numbers.formatDecimal(resumo.mediaEnergia, 1, 1)}"
+            >7.0</strong
+          >
+        </p>
+        <p>
+          <span th:text="#{dashboard.sleepAverage}">Média de sono</span>:
+          <strong th:text="${#numbers.formatDecimal(resumo.mediaSono, 1, 1)}"
+            >7.0</strong
+          >
+        </p>
+      </div>
+      <div class="card">
+        <h2 th:text="#{dashboard.weeklyReport}">Relatório semanal</h2>
+        <canvas id="chartHumor"></canvas>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 th:text="#{dashboard.lastCheckins}">Últimos check-ins</h2>
+      <table>
+        <thead>
+          <tr>
+            <th th:text="#{label.date}">Data</th>
+            <th th:text="#{label.mood}">Humor</th>
+            <th th:text="#{label.energy}">Energia</th>
+            <th th:text="#{label.sleep}">Sono</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="checkin : ${checkinsRecentes}">
+            <td th:text="${#temporals.format(checkin.data, 'dd/MM')}">10/10</td>
+            <td th:text="${checkin.humor}">BEM</td>
+            <td th:text="${checkin.energia}">7</td>
+            <td th:text="${checkin.sono}">8</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2 th:text="#{dashboard.aiInsights}">Insights</h2>
+      <p class="text-muted" th:text="#{dashboard.aiInsightsDescription}">
+        Mensagens geradas automaticamente a partir dos seus últimos check-ins.
+      </p>
+      <div
+        th:if="${#lists.isEmpty(insightsIa)}"
+        class="alert alert--info"
+        th:text="#{dashboard.noAnalyses}"
+      >
+        Nenhuma análise gerada ainda.
+      </div>
+      <div th:each="analise : ${insightsIa}" class="mb-4">
+        <h3
+          th:text="${#temporals.format(analise.criadoEm, 'dd/MM/yyyy HH:mm')}"
+        >
+          01/01/2025 12:00
+        </h3>
+        <p>
+          <strong th:text="#{dashboard.analysis.summary}">Resumo</strong>:
+          <span th:text="${analise.resumo}"></span>
+        </p>
+        <p
+          th:if="${analise.recomendacoes != null and !#strings.isEmpty(analise.recomendacoes)}"
+        >
+          <strong th:text="#{dashboard.analysis.recommendations}"
+            >Recomendações</strong
+          >:
+          <span th:text="${analise.recomendacoes}"></span>
+        </p>
+      </div>
+    </section>
+
+    <script th:inline="javascript">
+      const humorData = /*[[${resumo.distribuicaoHumor}]]*/ {};
+      const labels = Object.keys(humorData);
+      const values = Object.values(humorData);
+
+      if (labels.length > 0) {
+        const ctx = document.getElementById("chartHumor");
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: /*[[#{dashboard.chart.mood}]]*/ "Humor",
+                data: values,
+                backgroundColor: [
+                  "#4F46E5",
+                  "#22D3EE",
+                  "#F97316",
+                  "#F43F5E",
+                  "#2DD4BF",
+                ],
+              },
+            ],
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

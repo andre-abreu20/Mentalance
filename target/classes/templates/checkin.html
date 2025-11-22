@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html
+  lang="pt-BR"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="fragments/base :: layout(~{::title}, ~{::body})"
+>
+  <head>
+    <title th:text="#{checkin.history}">Histórico de check-ins</title>
+  </head>
+  <body>
+    <section class="card">
+      <h1 th:text="#{checkin.history}">Histórico</h1>
+      <div
+        th:if="${#lists.isEmpty(checkins)}"
+        class="alert alert--info"
+        th:text="#{checkin.history.empty}"
+      >
+        Nenhum check-in.
+      </div>
+      <table th:if="${!#lists.isEmpty(checkins)}">
+        <thead>
+          <tr>
+            <th th:text="#{label.date}">Data</th>
+            <th th:text="#{label.mood}">Humor</th>
+            <th th:text="#{label.energy}">Energia</th>
+            <th th:text="#{label.sleep}">Sono</th>
+            <th th:text="#{label.context}">Contexto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="checkin : ${checkins}">
+            <td th:text="${#temporals.format(checkin.data, 'dd/MM/yyyy')}">
+              01/01/2025
+            </td>
+            <td th:text="${checkin.humor}">BEM</td>
+            <td th:text="${checkin.energia}">7</td>
+            <td th:text="${checkin.sono}">7</td>
+            <td th:text="${checkin.contexto}">Contexto</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </body>
+</html>
