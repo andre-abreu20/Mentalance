@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "spring.rabbitmq.host")
+@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
 public class MessageProducer {
 
     private final RabbitTemplate rabbitTemplate;

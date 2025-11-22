@@ -9,17 +9,21 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.util.StringUtils;
+
+import jakarta.annotation.PostConstruct;
 
 /**
  * Configuração avançada do RabbitMQ para lidar com problemas de conexão.
  * Torna a conexão opcional e não bloqueia a inicialização da aplicação.
+ * Só é ativada se spring.rabbitmq.host estiver definido e não vazio.
  */
 @Configuration
 @Slf4j
-@ConditionalOnProperty(name = "spring.rabbitmq.host")
+@ConditionalOnProperty(name = "spring.rabbitmq.host", matchIfMissing = false)
 public class RabbitMQConnectionConfig {
 
-    @Value("${spring.rabbitmq.host}")
+    @Value("${spring.rabbitmq.host:}")
     private String host;
 
     @Value("${spring.rabbitmq.port:5672}")
@@ -37,49 +41,74 @@ public class RabbitMQConnectionConfig {
     @Value("${spring.rabbitmq.ssl.enabled:false}")
     private boolean sslEnabled;
 
+    @Value("${spring.rabbitmq.ssl.algorithm:TLSv1.2}")
+    private String sslAlgorithm;
+
+    /**
+     * Valida se o RabbitMQ está configurado corretamente.
+     * Se o host estiver vazio, lança uma exceção que impede a criação dos beans.
+     */
+    @PostConstruct
+    public void validateConfiguration() {
+        if (!StringUtils.hasText(host)) {
+            log.info("RabbitMQ host não configurado (vazio). Desabilitando RabbitMQ.");
+            throw new IllegalStateException("RabbitMQ host não configurado. Para habilitar, configure RABBITMQ_HOST. Para desabilitar completamente, remova spring.rabbitmq.host do application.properties.");
+        }
+    }
+
     /**
      * Configura a ConnectionFactory com tratamento de erros.
      * Se houver problema de conexão, a aplicação não falhará na inicialização.
      */
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "spring.rabbitmq.host")
     public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory();
-        factory.setHost(host);
-        factory.setPort(port);
-        factory.setUsername(username);
-        factory.setPassword(password);
-        factory.setVirtualHost(virtualHost);
 
-        if (sslEnabled) {
-            try {
-                factory.getRabbitConnectionFactory().useSslProtocol();
-                log.info("SSL habilitado para RabbitMQ");
-            } catch (Exception e) {
-                log.warn("Não foi possível habilitar SSL para RabbitMQ: {}", e.getMessage());
+        try {
+            CachingConnectionFactory factory = new CachingConnectionFactory();
+            factory.setHost(host);
+            factory.setPort(port);
+            factory.setUsername(username);
+            factory.setPassword(password);
+            
+            // Virtual host: remove barra inicial se presente
+            String vhost = virtualHost != null && !virtualHost.isEmpty() 
+                    ? virtualHost.replaceFirst("^/", "") 
+                    : "/";
+            factory.setVirtualHost(vhost);
+
+            if (sslEnabled) {
+                try {
+                    factory.getRabbitConnectionFactory().useSslProtocol(sslAlgorithm);
+                    log.info("SSL habilitado para RabbitMQ com algoritmo: {}", sslAlgorithm);
+                } catch (Exception e) {
+                    log.warn("Não foi possível habilitar SSL para RabbitMQ: {}", e.getMessage());
+                }
             }
+
+            // Configurações para não falhar na inicialização
+            factory.setRequestedHeartBeat(30);
+            factory.setConnectionTimeout(10000);
+
+            log.info("Configurando conexão RabbitMQ: {}:{}, vhost: {}", host, port, vhost);
+            return factory;
+        } catch (Exception e) {
+            log.error("Erro ao configurar RabbitMQ. A aplicação continuará sem RabbitMQ: {}", e.getMessage(), e);
+            throw new IllegalStateException("Erro ao configurar RabbitMQ: " + e.getMessage(), e);
         }
-
-        // Configurações para não falhar na inicialização
-        factory.setRequestedHeartBeat(30);
-        factory.setConnectionTimeout(10000);
-
-        log.info("Configurando conexão RabbitMQ: {}:{}, vhost: {}", host, port, virtualHost);
-        return factory;
     }
 
     /**
      * Configura o RabbitTemplate com tratamento de erros e conversor JSON.
      */
     @Bean
-    @ConditionalOnProperty(name = "spring.rabbitmq.host")
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
                                          org.springframework.amqp.support.converter.MessageConverter messageConverter) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
         // Não lança exceção se a conexão falhar
         template.setMandatory(false);
+        log.info("RabbitTemplate configurado com sucesso");
         return template;
     }
 }
