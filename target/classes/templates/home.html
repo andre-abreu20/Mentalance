@@ -3,7 +3,7 @@
   lang="pt-BR"
   xmlns:th="http://www.thymeleaf.org"
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-  th:replace="fragments/base :: layout(~{::title}, ~{::body})"
+  th:replace="~{fragments/base :: layout(~{::title}, ~{::body})}"
 >
   <head>
     <title th:text="#{home.pageTitle}">Bem-vindo à Mentalance</title>

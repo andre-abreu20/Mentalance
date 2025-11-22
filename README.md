@@ -12,38 +12,69 @@ Plataforma web de bem-estar emocional construída com Spring Boot e Thymeleaf. P
 - Internacionalização (`pt-BR` e `en-US`).
 - Validação de formulários e tratamento centralizado de erros.
 
-## Stack
+## Tecnologias Utilizadas
 
-- Java 17
-- Spring Boot 3.5.4 (Web, Data JPA, Security, Validation, Thymeleaf)
-- H2 (Ambiente de desenvolvimento) / Oracle (produção)
-- Thymeleaf + Chart.js
+| Categoria | Tecnologias |
+|-----------|-------------|
+| Linguagem | Java 17 |
+| Framework web | Spring Boot 3.5.4 (Web, Data JPA, Validation, Security, Thymeleaf) |
+| Banco de dados | H2 (dev) / Oracle (prod) |
+| Autenticação | Spring Security + BCrypt |
+| Front-end | Thymeleaf, Bootstrap 5, Chart.js |
+| IA generativa | OpenAI GPT-4o mini (client oficial `openai-java`) |
+| Build | Maven |
 
-## Executando o projeto
+## Guia de Instalação e Execução
 
-```bash
-./mvnw spring-boot:run
-```
+1. **Pré-requisitos**
+   - JDK 17+
+   - Maven 3.9+ (ou o wrapper `./mvnw`)
+   - Git
 
-Aplicação disponível em `http://localhost:8080`.
+2. **Clonar o repositório**
+   ```bash
+   git clone https://github.com/andre-abreu20/Mentalance.git
+   cd Mentalance
+   ```
 
-### Credenciais iniciais
+3. **Variáveis essenciais**
+   - Defina o datasource padrão (H2 já configurado em `application.properties`).
+   - Para Oracle, crie um `application-prod.properties` ou defina:
+     ```
+     spring.datasource.url=jdbc:oracle:thin:@host:porta/sid
+     spring.datasource.username=USUARIO
+     spring.datasource.password=SENHA
+     spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+     ```
 
-- usuário: `admin`
-- senha: `admin123`
+4. **Configurar OpenAI (opcional)**
+   - Exportar a chave:
+     - PowerShell: `$env:OPENAI_API_KEY="SEU_TOKEN"`
+     - Bash: `export OPENAI_API_KEY="SEU_TOKEN"`
+   - Definir a flag:
+     ```
+     openai.enabled=true
+     openai.model=gpt-4o-mini # opcional
+     ```
+   - Para desenvolvimento sem IA real, mantenha `openai.enabled=false`.
 
-Faça login, crie novos usuários pelo formulário de registro e explore o dashboard.
+5. **Rodar em ambiente local**
+   ```bash
+   ./mvnw spring-boot:run
+   # ou
+   mvn spring-boot:run
+   ```
+   A aplicação sobe em `http://localhost:8080`.
 
-## Configuração do banco
+6. **Credenciais padrão**
+   - usuário: `admin`
+   - senha: `admin123`
 
-Por padrão o projeto utiliza H2 em memória. Para usar Oracle, ajuste `application.properties`:
-
-```
-spring.datasource.url=jdbc:oracle:thin:@host:porta:sid
-spring.datasource.username=USUARIO
-spring.datasource.password=SENHA
-spring.datasource.driverClassName=oracle.jdbc.OracleDriver
-```
+7. **Build para deploy**
+   ```bash
+   mvn clean package
+   ```
+   O artefato `target/mentalance-0.0.1-SNAPSHOT.jar` pode ser publicado em Azure Web App (Java 17 + Tomcat 10 ou container próprio). Lembre-se de configurar as variáveis de ambiente (`OPENAI_API_KEY`, `openai.enabled`, `spring.datasource.*`) no painel do Azure.
 
 ## Integração com OpenAI
 
@@ -68,9 +99,9 @@ Os insights ficam salvos na tabela `analises`, vinculados a cada check-in, e sã
 
 ## Autores
 
-- Nome do Autor 1 — RM XXXXX
-- Nome do Autor 2 — RM XXXXX
-- Nome do Autor 3 — RM XXXXX
-
-Atualize a seção com os participantes do time.
+| Nome | RM | GitHub |
+|------|----|--------|
+| André Luís Mesquita de Abreu | 558159 | [@andre-abreu20](https://github.com/andre-abreu20) |
+| Maria Eduarda Brigidio | 558575 | [@dudabrigidio](https://github.com/dudabrigidio) |
+| Rafael Bompadre Lima | 556459 | [@Rafa130206](https://github.com/Rafa130206) |
 

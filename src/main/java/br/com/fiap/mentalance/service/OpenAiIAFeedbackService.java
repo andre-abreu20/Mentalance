@@ -2,6 +2,9 @@ package br.com.fiap.mentalance.service;
 
 import br.com.fiap.mentalance.model.Analise;
 import br.com.fiap.mentalance.model.Checkin;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
 import com.openai.models.responses.Response;
 import com.openai.models.responses.ResponseCreateParams;
@@ -13,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +29,7 @@ import java.util.stream.Collectors;
 public class OpenAiIAFeedbackService implements IAFeedbackService {
 
     private final OpenAIClient openAIClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${openai.model:gpt-4o-mini}")
     private String model;
@@ -50,7 +56,7 @@ public class OpenAiIAFeedbackService implements IAFeedbackService {
             analise.setModelo("openai");
             analise.setSentimentos(checkin.getHumor().name());
 
-            ResultadoInsight resultado = separarResumoESugestoes(textoIa, english);
+            ResultadoInsight resultado = interpretarResposta(textoIa, english);
             analise.setResumo(resultado.resumo());
             analise.setRecomendacoes(resultado.sugestoes());
 
@@ -65,18 +71,22 @@ public class OpenAiIAFeedbackService implements IAFeedbackService {
         if (english) {
             return """
                     You are an empathetic wellbeing assistant focused on daily check-ins.
-                    Always answer in English with two sections:
-                    1) Summary: one short paragraph validating emotions.
-                    2) Suggestions: a bullet list (1-3 items) with practical actions.
-                    Do not mention policies or that you are an AI.
+                    RESPOND ONLY WITH A JSON OBJECT like:
+                    {
+                      "summary": "paragraph validating emotions",
+                      "suggestions": ["practical suggestion 1", "suggestion 2", "suggestion 3"]
+                    }
+                    No markdown, bullets or any text outside this JSON.
                     """;
         }
         return """
                 Você é um mentor empático especializado em saúde mental no trabalho.
-                Responda sempre em português do Brasil, com duas seções:
-                1) Resumo: um parágrafo curto validando as emoções.
-                2) Sugestões: lista com 1-3 ações práticas.
-                Não cite políticas nem mencione que é um modelo de IA.
+                RESPONDA APENAS COM UM JSON NO FORMATO:
+                {
+                  "resumo": "parágrafo validando as emoções",
+                  "recomendacoes": ["sugestão 1", "sugestão 2", "sugestão 3"]
+                }
+                Não use markdown, negrito ou texto fora desse JSON.
                 """;
     }
 
@@ -88,7 +98,7 @@ public class OpenAiIAFeedbackService implements IAFeedbackService {
                 - Sono: %d
                 - Contexto: "%s"
 
-                Gere o retorno seguindo o formato solicitado (Resumo + Sugestões).
+                Reforce o formato JSON obrigatório e mantenha frases curtas.
                 """;
 
         String templateEn = """
@@ -98,7 +108,7 @@ public class OpenAiIAFeedbackService implements IAFeedbackService {
                 - Sleep: %d
                 - Context: "%s"
 
-                Follow the requested format (Summary + Suggestions).
+                Remember the mandatory JSON format and keep sentences concise.
                 """;
 
         return String.format(english ? templateEn : templatePt,
@@ -124,25 +134,33 @@ public class OpenAiIAFeedbackService implements IAFeedbackService {
                 .collect(Collectors.joining("\n"));
     }
 
-    private ResultadoInsight separarResumoESugestoes(String texto, boolean english) {
+    private ResultadoInsight interpretarResposta(String texto, boolean english) {
         if (texto == null || texto.isBlank()) {
             return new ResultadoInsight("", "");
         }
 
-        String marcadorResumo = english ? "summary:" : "resumo:";
-        String marcadorSugestoes = english ? "suggestions:" : "sugest";
+        try {
+            JsonNode root = objectMapper.readTree(texto);
+            String resumo = root.path(english ? "summary" : "resumo").asText("");
+            JsonNode arr = root.path(english ? "suggestions" : "recomendacoes");
 
-        String lower = texto.toLowerCase();
-        int idxResumo = lower.indexOf(marcadorResumo);
-        int idxSugestoes = lower.indexOf(marcadorSugestoes);
+            List<String> sugestoes = new ArrayList<>();
+            if (arr.isArray()) {
+                arr.forEach(node -> sugestoes.add(node.asText("")));
+            }
+            String recomBinado = sugestoes.stream()
+                    .filter(s -> s != null && !s.isBlank())
+                    .collect(Collectors.joining("\n"));
 
-        if (idxResumo >= 0 && idxSugestoes > idxResumo) {
-            String resumo = texto.substring(idxResumo + marcadorResumo.length(), idxSugestoes).trim();
-            String sugestoes = texto.substring(idxSugestoes + marcadorSugestoes.length()).trim();
-            return new ResultadoInsight(resumo, sugestoes);
+            if (resumo.isBlank() && recomBinado.isBlank()) {
+                return new ResultadoInsight(texto.trim(), "");
+            }
+
+            return new ResultadoInsight(resumo, recomBinado);
+        } catch (JsonProcessingException e) {
+            log.warn("Não foi possível interpretar o JSON retornado pela IA. Retornando texto bruto.", e);
+            return new ResultadoInsight(texto.trim(), "");
         }
-
-        return new ResultadoInsight(texto.trim(), "");
     }
 
     private Analise fallbackAnalise(Checkin checkin, boolean english, Locale locale) {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
-      th:replace="fragments/base :: layout(~{::title}, ~{::body})">
+      th:replace="~{fragments/base :: layout(~{::title}, ~{::body})}">
 <head>
     <title th:text="#{admin.title}">Admin</title>
 </head>

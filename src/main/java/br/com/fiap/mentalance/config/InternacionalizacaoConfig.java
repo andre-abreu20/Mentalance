@@ -11,6 +11,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Locale;
 
 @Configuration
@@ -28,10 +29,9 @@ public class InternacionalizacaoConfig implements WebMvcConfigurer {
 
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver resolver = new CookieLocaleResolver();
+        CookieLocaleResolver resolver = new CookieLocaleResolver("MENTALANCE_LANG");
         resolver.setDefaultLocale(Locale.forLanguageTag("pt-BR"));
-        resolver.setCookieName("MENTALANCE_LANG");
-        resolver.setCookieMaxAge(60 * 60 * 24 * 30);
+        resolver.setCookieMaxAge(Duration.ofDays(30));
         return resolver;
     }
 
