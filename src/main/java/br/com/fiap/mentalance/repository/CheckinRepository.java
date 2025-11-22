@@ -2,6 +2,8 @@ package br.com.fiap.mentalance.repository;
 
 import br.com.fiap.mentalance.model.Checkin;
 import br.com.fiap.mentalance.model.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,7 +14,11 @@ public interface CheckinRepository extends JpaRepository<Checkin, Long> {
 
     List<Checkin> findTop7ByUsuarioOrderByDataDesc(Usuario usuario);
 
+    Page<Checkin> findAllByUsuarioOrderByDataDesc(Usuario usuario, Pageable pageable);
+
     List<Checkin> findAllByUsuarioOrderByDataDesc(Usuario usuario);
+
+    Page<Checkin> findAllByOrderByDataDesc(Pageable pageable);
 
     List<Checkin> findTop10ByOrderByDataDesc();
 

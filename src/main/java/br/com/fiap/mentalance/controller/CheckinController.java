@@ -7,12 +7,17 @@ import br.com.fiap.mentalance.service.CheckinService;
 import br.com.fiap.mentalance.service.SessaoUsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
@@ -25,9 +30,21 @@ public class CheckinController {
     private final CheckinService checkinService;
 
     @GetMapping("/checkins")
-    public String lista(Model model) {
+    public String lista(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
         Usuario usuario = sessaoUsuarioService.getUsuarioAtual();
-        model.addAttribute("checkins", checkinService.listarTodos(usuario));
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("data").descending());
+        Page<br.com.fiap.mentalance.model.Checkin> checkinsPage = checkinService.listarTodosPaginados(usuario, pageable);
+        
+        model.addAttribute("checkins", checkinsPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", checkinsPage.getTotalPages());
+        model.addAttribute("totalItems", checkinsPage.getTotalElements());
+        model.addAttribute("pageSize", size);
+        
         return "checkin";
     }
 

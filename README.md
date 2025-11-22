@@ -7,6 +7,7 @@ Plataforma web de bem-estar emocional construída com Spring Boot e Thymeleaf. P
 - Registro e autenticação de usuários (Spring Security + BCrypt).
 - Check-ins diários com dados de humor, energia, sono e contexto textual.
 - Geração de análises com OpenAI (ou serviço mock quando `openai.enabled=false`).
+- **Mensageria assíncrona com RabbitMQ** para processamento de eventos de check-in.
 - Painel do usuário com gráficos (Chart.js) e histórico de análises.
 - Painel administrativo com visão geral do sistema.
 - Internacionalização (`pt-BR` e `en-US`).
@@ -22,6 +23,7 @@ Plataforma web de bem-estar emocional construída com Spring Boot e Thymeleaf. P
 | Autenticação | Spring Security + BCrypt |
 | Front-end | Thymeleaf, Bootstrap 5, Chart.js |
 | IA generativa | OpenAI GPT-4o mini (client oficial `openai-java`) |
+| Mensageria | RabbitMQ (Spring AMQP) |
 | Build | Maven |
 
 ## Guia de Instalação e Execução
@@ -89,7 +91,91 @@ Plataforma web de bem-estar emocional construída com Spring Boot e Thymeleaf. P
    Esses parâmetros podem ficar em `application.properties`, `application-prod.properties` ou variáveis de ambiente (`OPENAI_ENABLED=true` etc.).
 3. Desativando a flag (`openai.enabled=false`) o projeto usa o `MockIAFeedbackService`, útil para desenvolvimento offline.
 
-Os insights ficam salvos na tabela `analises`, vinculados a cada check-in, e são exibidos no quadro “Insights de IA” do dashboard.
+Os insights ficam salvos na tabela `analises`, vinculados a cada check-in, e são exibidos no quadro "Insights de IA" do dashboard.
+
+## Integração com RabbitMQ
+
+A aplicação envia mensagens assíncronas para o RabbitMQ sempre que um check-in é registrado. Isso permite processamento em background, integrações externas e escalabilidade.
+
+### Opção A: CloudAMQP (Recomendado para produção)
+
+1. **Criar conta no CloudAMQP** (free tier disponível):
+   - Acesse [https://www.cloudamqp.com/](https://www.cloudamqp.com/)
+   - Crie uma instância gratuita (Little Lemur)
+   - Copie as credenciais de conexão
+
+2. **Configurar variáveis de ambiente**:
+   ```bash
+   # PowerShell (Windows)
+   $env:RABBITMQ_HOST="amqps://seu-host.cloudamqp.com"
+   $env:RABBITMQ_PORT="5671"
+   $env:RABBITMQ_USERNAME="seu-usuario"
+   $env:RABBITMQ_PASSWORD="sua-senha"
+   $env:RABBITMQ_VHOST="/"
+   $env:RABBITMQ_SSL_ENABLED="true"
+   
+   # Bash (Linux/macOS)
+   export RABBITMQ_HOST="amqps://seu-host.cloudamqp.com"
+   export RABBITMQ_PORT="5671"
+   export RABBITMQ_USERNAME="seu-usuario"
+   export RABBITMQ_PASSWORD="sua-senha"
+   export RABBITMQ_VHOST="/"
+   export RABBITMQ_SSL_ENABLED="true"
+   ```
+
+3. **Ou configurar no `application.properties`** (não recomendado para produção):
+   ```properties
+   spring.rabbitmq.host=seu-host.cloudamqp.com
+   spring.rabbitmq.port=5671
+   spring.rabbitmq.username=seu-usuario
+   spring.rabbitmq.password=sua-senha
+   spring.rabbitmq.virtual-host=/
+   spring.rabbitmq.ssl.enabled=true
+   ```
+
+### Opção B: RabbitMQ Local (Desenvolvimento)
+
+1. **Instalar RabbitMQ localmente**:
+   - Windows: Use Docker: `docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management`
+   - Linux/macOS: `brew install rabbitmq` ou `apt-get install rabbitmq-server`
+
+2. **Configuração padrão** (já configurada no `application.properties`):
+   ```properties
+   spring.rabbitmq.host=localhost
+   spring.rabbitmq.port=5672
+   spring.rabbitmq.username=guest
+   spring.rabbitmq.password=guest
+   ```
+
+### Como funciona
+
+- Quando um check-in é registrado, uma mensagem JSON é enviada para a fila `mentalance.checkin`.
+- O `MessageProducer` envia a mensagem de forma assíncrona (não bloqueia o fluxo principal).
+- O `CheckinMessageListener` (opcional) processa as mensagens para logs, notificações ou integrações.
+- Se o RabbitMQ não estiver configurado, a aplicação funciona normalmente (mensageria é opcional).
+
+### Estrutura da mensagem
+
+```json
+{
+  "checkinId": 1,
+  "usuarioId": 1,
+  "usuarioNome": "João Silva",
+  "usuarioEmail": "joao@example.com",
+  "humor": "BEM",
+  "energia": 7,
+  "sono": 8,
+  "contexto": "Dia produtivo",
+  "data": "2025-01-22",
+  "criadoEm": "2025-01-22T10:30:00",
+  "analiseGerada": true,
+  "modeloAnalise": "openai"
+}
+```
+
+### Desabilitar RabbitMQ
+
+Se não quiser usar mensageria, simplesmente não configure `spring.rabbitmq.host`. A aplicação funcionará normalmente sem enviar mensagens.
 
 ## Próximos passos sugeridos
 

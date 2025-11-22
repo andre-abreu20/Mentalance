@@ -1,6 +1,10 @@
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\CacheConfig.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\DataLoader.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\InternacionalizacaoConfig.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\OpenAIConfig.java
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\RabbitMQConfig.java
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\RabbitMQConnectionConfig.java
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\RabbitMQListenerConfig.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\config\SecurityConfig.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\controller\AdminController.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\controller\AuthController.java
@@ -10,11 +14,13 @@ C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\controller\
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\controller\RelatorioController.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\dto\AnaliseDTO.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\dto\CheckinGraficoDTO.java
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\dto\CheckinMessageDTO.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\dto\CheckinRequest.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\dto\DashboardResumoDTO.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\dto\UsuarioRegistroRequest.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\exception\GlobalExceptionHandler.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\exception\NegocioException.java
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\listener\CheckinMessageListener.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\MentalanceApplication.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\model\Analise.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\model\Checkin.java
@@ -27,6 +33,7 @@ C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\repository\
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\security\UsuarioDetailsService.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\service\CheckinService.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\service\IAFeedbackService.java
+C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\service\MessageProducer.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\service\MockIAFeedbackService.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\service\OpenAiIAFeedbackService.java
 C:\Users\T-GAMER\Downloads\java\src\main\java\br\com\fiap\mentalance\service\SessaoUsuarioService.java

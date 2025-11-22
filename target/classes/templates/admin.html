@@ -32,48 +32,162 @@
 
 <section class="card">
     <h2 th:text="#{admin.latestCheckins}">Últimos check-ins</h2>
-    <table>
-        <thead>
-        <tr>
-            <th th:text="#{label.user}">Usuário</th>
-            <th th:text="#{label.date}">Data</th>
-            <th th:text="#{label.mood}">Humor</th>
-            <th th:text="#{label.energy}">Energia</th>
-            <th th:text="#{label.sleep}">Sono</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="checkin : ${checkinsRecentes}">
-            <td th:text="${checkin.usuario.nome}">Nome</td>
-            <td th:text="${#temporals.format(checkin.data, 'dd/MM/yyyy')}">01/01/2025</td>
-            <td th:text="${checkin.humor}">BEM</td>
-            <td th:text="${checkin.energia}">7</td>
-            <td th:text="${checkin.sono}">7</td>
-        </tr>
-        </tbody>
-    </table>
+    <div th:if="${!#lists.isEmpty(checkinsRecentes)}">
+        <div class="mb-3">
+            <p class="text-muted mb-0">
+                <span th:text="#{pagination.showing}">Mostrando</span>
+                <strong th:text="${checkinsTotalItems}">0</strong>
+                <span th:text="#{pagination.items}">itens</span>
+                <span th:if="${checkinsTotalPages > 1}">
+                    (<span th:text="#{pagination.page}">Página</span>
+                    <strong th:text="${checkinsCurrentPage + 1}">1</strong>
+                    <span th:text="#{pagination.of}">de</span>
+                    <strong th:text="${checkinsTotalPages}">1</strong>)
+                </span>
+            </p>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{label.user}">Usuário</th>
+                <th th:text="#{label.date}">Data</th>
+                <th th:text="#{label.mood}">Humor</th>
+                <th th:text="#{label.energy}">Energia</th>
+                <th th:text="#{label.sleep}">Sono</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="checkin : ${checkinsRecentes}">
+                <td th:text="${checkin.usuario.nome}">Nome</td>
+                <td th:text="${#temporals.format(checkin.data, 'dd/MM/yyyy')}">01/01/2025</td>
+                <td th:text="${checkin.humor}">BEM</td>
+                <td th:text="${checkin.energia}">7</td>
+                <td th:text="${checkin.sono}">7</td>
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${checkinsTotalPages > 1}" aria-label="Navegação de páginas" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${checkinsCurrentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${pageUsuarios}, pageCheckins=${checkinsCurrentPage - 1}, sizeCheckins=10)}" th:if="${checkinsCurrentPage > 0}">
+                        <span th:text="#{pagination.previous}">Anterior</span>
+                    </a>
+                    <span class="page-link" th:if="${checkinsCurrentPage == 0}">
+                        <span th:text="#{pagination.previous}">Anterior</span>
+                    </span>
+                </li>
+                <!-- Mostra página atual e algumas ao redor -->
+                <li class="page-item" th:if="${checkinsCurrentPage > 2}">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${pageUsuarios}, pageCheckins=0, sizeCheckins=10)}">1</a>
+                </li>
+                <li class="page-item disabled" th:if="${checkinsCurrentPage > 2}">
+                    <span class="page-link">...</span>
+                </li>
+                
+                <li th:each="i : ${#numbers.sequence(
+                    T(java.lang.Math).max(0, checkinsCurrentPage - 1),
+                    T(java.lang.Math).min(checkinsTotalPages - 1, checkinsCurrentPage + 1)
+                )}" 
+                    class="page-item" th:classappend="${i == checkinsCurrentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${pageUsuarios}, pageCheckins=${i}, sizeCheckins=10)}" th:text="${i + 1}">1</a>
+                </li>
+                
+                <li class="page-item disabled" th:if="${checkinsCurrentPage < checkinsTotalPages - 2}">
+                    <span class="page-link">...</span>
+                </li>
+                <li class="page-item" th:if="${checkinsCurrentPage < checkinsTotalPages - 2}">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${pageUsuarios}, pageCheckins=${checkinsTotalPages - 1}, sizeCheckins=10)}" th:text="${checkinsTotalPages}"></a>
+                </li>
+                <li class="page-item" th:classappend="${checkinsCurrentPage >= checkinsTotalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${pageUsuarios}, pageCheckins=${checkinsCurrentPage + 1}, sizeCheckins=10)}" th:if="${checkinsCurrentPage < checkinsTotalPages - 1}">
+                        <span th:text="#{pagination.next}">Próxima</span>
+                    </a>
+                    <span class="page-link" th:if="${checkinsCurrentPage >= checkinsTotalPages - 1}">
+                        <span th:text="#{pagination.next}">Próxima</span>
+                    </span>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </section>
 
 <section class="card">
     <h2 th:text="#{admin.users}">Usuários</h2>
-    <table>
-        <thead>
-        <tr>
-            <th th:text="#{label.name}">Nome</th>
-            <th th:text="#{label.email}">Email</th>
-            <th th:text="#{label.profile}">Perfil</th>
-            <th th:text="#{label.registration}">Cadastro</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="usuario : ${usuarios}">
-            <td th:text="${usuario.nome}">Nome</td>
-            <td th:text="${usuario.email}">email@example.com</td>
-            <td th:text="${usuario.perfil}">USUARIO</td>
-            <td th:text="${#temporals.format(usuario.criadoEm, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
-        </tr>
-        </tbody>
-    </table>
+    <div th:if="${!#lists.isEmpty(usuarios)}">
+        <div class="mb-3">
+            <p class="text-muted mb-0">
+                <span th:text="#{pagination.showing}">Mostrando</span>
+                <strong th:text="${usuariosTotalItems}">0</strong>
+                <span th:text="#{pagination.items}">itens</span>
+                <span th:if="${usuariosTotalPages > 1}">
+                    (<span th:text="#{pagination.page}">Página</span>
+                    <strong th:text="${usuariosCurrentPage + 1}">1</strong>
+                    <span th:text="#{pagination.of}">de</span>
+                    <strong th:text="${usuariosTotalPages}">1</strong>)
+                </span>
+            </p>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{label.name}">Nome</th>
+                <th th:text="#{label.email}">Email</th>
+                <th th:text="#{label.profile}">Perfil</th>
+                <th th:text="#{label.registration}">Cadastro</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="usuario : ${usuarios}">
+                <td th:text="${usuario.nome}">Nome</td>
+                <td th:text="${usuario.email}">email@example.com</td>
+                <td th:text="${usuario.perfil}">USUARIO</td>
+                <td th:text="${#temporals.format(usuario.criadoEm, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${usuariosTotalPages > 1}" aria-label="Navegação de páginas" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${usuariosCurrentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${usuariosCurrentPage - 1}, pageCheckins=${pageCheckins}, sizeUsuarios=10)}" th:if="${usuariosCurrentPage > 0}">
+                        <span th:text="#{pagination.previous}">Anterior</span>
+                    </a>
+                    <span class="page-link" th:if="${usuariosCurrentPage == 0}">
+                        <span th:text="#{pagination.previous}">Anterior</span>
+                    </span>
+                </li>
+                <!-- Mostra página atual e algumas ao redor -->
+                <li class="page-item" th:if="${usuariosCurrentPage > 2}">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=0, pageCheckins=${pageCheckins}, sizeUsuarios=10)}">1</a>
+                </li>
+                <li class="page-item disabled" th:if="${usuariosCurrentPage > 2}">
+                    <span class="page-link">...</span>
+                </li>
+                
+                <li th:each="i : ${#numbers.sequence(
+                    T(java.lang.Math).max(0, usuariosCurrentPage - 1),
+                    T(java.lang.Math).min(usuariosTotalPages - 1, usuariosCurrentPage + 1)
+                )}" 
+                    class="page-item" th:classappend="${i == usuariosCurrentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${i}, pageCheckins=${pageCheckins}, sizeUsuarios=10)}" th:text="${i + 1}">1</a>
+                </li>
+                
+                <li class="page-item disabled" th:if="${usuariosCurrentPage < usuariosTotalPages - 2}">
+                    <span class="page-link">...</span>
+                </li>
+                <li class="page-item" th:if="${usuariosCurrentPage < usuariosTotalPages - 2}">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${usuariosTotalPages - 1}, pageCheckins=${pageCheckins}, sizeUsuarios=10)}" th:text="${usuariosTotalPages}"></a>
+                </li>
+                <li class="page-item" th:classappend="${usuariosCurrentPage >= usuariosTotalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin(pageUsuarios=${usuariosCurrentPage + 1}, pageCheckins=${pageCheckins}, sizeUsuarios=10)}" th:if="${usuariosCurrentPage < usuariosTotalPages - 1}">
+                        <span th:text="#{pagination.next}">Próxima</span>
+                    </a>
+                    <span class="page-link" th:if="${usuariosCurrentPage >= usuariosTotalPages - 1}">
+                        <span th:text="#{pagination.next}">Próxima</span>
+                    </span>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </section>
 </body>
 </html>

@@ -1,6 +1,8 @@
 package br.com.fiap.mentalance.service;
 
+import br.com.fiap.mentalance.config.CacheConfig;
 import br.com.fiap.mentalance.dto.AnaliseDTO;
+import br.com.fiap.mentalance.dto.CheckinMessageDTO;
 import br.com.fiap.mentalance.dto.CheckinRequest;
 import br.com.fiap.mentalance.dto.DashboardResumoDTO;
 import br.com.fiap.mentalance.exception.NegocioException;
@@ -12,6 +14,11 @@ import br.com.fiap.mentalance.repository.AnaliseRepository;
 import br.com.fiap.mentalance.repository.CheckinRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,6 +26,7 @@ import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +37,16 @@ public class CheckinService {
     private final AnaliseRepository analiseRepository;
     private final IAFeedbackService iaFeedbackService;
 
+    @Autowired(required = false)
+    private MessageProducer messageProducer;
+
     @Transactional
+    @CacheEvict(value = {
+            CacheConfig.CACHE_CHECKINS_RECENTES,
+            CacheConfig.CACHE_RESUMO_SEMANAL,
+            CacheConfig.CACHE_ANALISES_IA,
+            CacheConfig.CACHE_ESTATISTICAS_GLOBAIS
+    }, allEntries = true)
     public Checkin registrarCheckin(Usuario usuario, CheckinRequest dto, Locale locale) {
         if (usuario == null) {
             throw new NegocioException("Usuário não encontrado para registro de check-in.");
@@ -49,9 +66,29 @@ public class CheckinService {
         Analise analiseSalva = analiseRepository.save(analise);
         salvo.setAnalise(analiseSalva);
 
+        // Envia mensagem assíncrona para o RabbitMQ (se configurado)
+        Optional.ofNullable(messageProducer).ifPresent(producer -> {
+            CheckinMessageDTO message = CheckinMessageDTO.builder()
+                    .checkinId(salvo.getId())
+                    .usuarioId(usuario.getId())
+                    .usuarioNome(usuario.getNome())
+                    .usuarioEmail(usuario.getEmail())
+                    .humor(salvo.getHumor())
+                    .energia(salvo.getEnergia())
+                    .sono(salvo.getSono())
+                    .contexto(salvo.getContexto())
+                    .data(salvo.getData())
+                    .criadoEm(salvo.getCriadoEm())
+                    .analiseGerada(true)
+                    .modeloAnalise(analiseSalva.getModelo())
+                    .build();
+            producer.enviarCheckin(message);
+        });
+
         return salvo;
     }
 
+    @Cacheable(value = CacheConfig.CACHE_CHECKINS_RECENTES, key = "#usuario.id")
     public List<Checkin> listarRecentes(Usuario usuario) {
         return checkinRepository.findTop7ByUsuarioOrderByDataDesc(usuario);
     }
@@ -60,6 +97,14 @@ public class CheckinService {
         return checkinRepository.findAllByUsuarioOrderByDataDesc(usuario);
     }
 
+    /**
+     * Lista check-ins paginados do usuário.
+     */
+    public Page<Checkin> listarTodosPaginados(Usuario usuario, Pageable pageable) {
+        return checkinRepository.findAllByUsuarioOrderByDataDesc(usuario, pageable);
+    }
+
+    @Cacheable(value = CacheConfig.CACHE_ANALISES_IA, key = "#usuario.id")
     public List<AnaliseDTO> listarAnalises(Usuario usuario) {
         return analiseRepository.findTop20ByCheckinUsuarioOrderByCriadoEmDesc(usuario).stream()
                 .map(analise -> AnaliseDTO.builder()
@@ -72,6 +117,7 @@ public class CheckinService {
                 .toList();
     }
 
+    @Cacheable(value = CacheConfig.CACHE_RESUMO_SEMANAL, key = "#usuario.id")
     public DashboardResumoDTO gerarResumoSemanal(Usuario usuario) {
         LocalDate hoje = LocalDate.now();
         LocalDate inicioSemana = hoje.with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1);
@@ -122,10 +168,12 @@ public class CheckinService {
         return checkinRepository.buscarPorPeriodo(usuario, inicio, fim);
     }
 
+    @Cacheable(value = CacheConfig.CACHE_ESTATISTICAS_GLOBAIS, key = "'totalCheckins'")
     public long contarCheckins() {
         return checkinRepository.count();
     }
 
+    @Cacheable(value = CacheConfig.CACHE_ESTATISTICAS_GLOBAIS, key = "'mediaEnergia'")
     public double mediaEnergiaGlobal() {
         return checkinRepository.findAll().stream()
                 .mapToInt(Checkin::getEnergia)
@@ -133,6 +181,7 @@ public class CheckinService {
                 .orElse(0);
     }
 
+    @Cacheable(value = CacheConfig.CACHE_ESTATISTICAS_GLOBAIS, key = "'mediaSono'")
     public double mediaSonoGlobal() {
         return checkinRepository.findAll().stream()
                 .mapToInt(Checkin::getSono)
@@ -140,8 +189,16 @@ public class CheckinService {
                 .orElse(0);
     }
 
+    @Cacheable(value = CacheConfig.CACHE_ESTATISTICAS_GLOBAIS, key = "'checkinsRecentesGlobal'")
     public List<Checkin> listarRecentesGlobal() {
         return checkinRepository.findTop10ByOrderByDataDesc();
+    }
+
+    /**
+     * Lista check-ins globais paginados (admin).
+     */
+    public Page<Checkin> listarRecentesGlobalPaginados(Pageable pageable) {
+        return checkinRepository.findAllByOrderByDataDesc(pageable);
     }
 }
 
