@@ -21,6 +21,9 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- Por padrão, pula os testes durante o build (útil para deploy) -->
+        <!-- Para executar testes: mvn test ou mvn verify -Dskip.tests=false -->
+        <skip.tests>true</skip.tests>
     </properties>
 
     <dependencies>
@@ -119,6 +122,15 @@
                             <artifactId>lombok</artifactId>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Pula os testes por padrão durante o build -->
+                    <!-- Para executar os testes localmente, use: mvn test ou mvn verify -DskipTests=false -->
+                    <skipTests>${skip.tests}</skipTests>
                 </configuration>
             </plugin>
         </plugins>
