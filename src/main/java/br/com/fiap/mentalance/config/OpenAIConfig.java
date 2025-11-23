@@ -3,7 +3,7 @@ package br.com.fiap.mentalance.config;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,12 +16,12 @@ import java.util.Optional;
  */
 @Configuration
 @Slf4j
-@ConditionalOnProperty(value = "openai.enabled", havingValue = "true")
+@ConditionalOnExpression("'${openai.enabled:false}' == 'true' && T(java.lang.System).getenv('OPENAI_API_KEY') != null && !T(java.lang.System).getenv('OPENAI_API_KEY').isEmpty()")
 public class OpenAIConfig {
 
     @Bean
     public OpenAIClient openAIClient() {
-        // Verifica se a API key está configurada
+        // Verifica se a API key está configurada (já verificada na condição, mas vamos garantir)
         String apiKey = Optional.ofNullable(System.getenv("OPENAI_API_KEY"))
                 .orElse(Optional.ofNullable(System.getProperty("OPENAI_API_KEY")).orElse(""));
         

@@ -13,7 +13,7 @@ import com.openai.models.responses.ResponseOutputText;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "openai.enabled", havingValue = "true")
+@ConditionalOnExpression("'${openai.enabled:false}' == 'true' && T(java.lang.System).getenv('OPENAI_API_KEY') != null && !T(java.lang.System).getenv('OPENAI_API_KEY').isEmpty()")
 public class OpenAiIAFeedbackService implements IAFeedbackService {
 
     private final OpenAIClient openAIClient;
