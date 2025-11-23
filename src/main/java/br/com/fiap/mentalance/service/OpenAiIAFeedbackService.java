@@ -39,6 +39,9 @@ public class OpenAiIAFeedbackService implements IAFeedbackService {
         Locale effectiveLocale = locale != null ? locale : Locale.forLanguageTag("pt-BR");
         boolean english = effectiveLocale.getLanguage().startsWith("en");
 
+        log.info("Análise de IA gerada usando OpenAI (modelo real): checkinId={}, usuarioId={}, modelo={}, humor={}",
+                checkin.getId(), checkin.getUsuario() != null ? checkin.getUsuario().getId() : null, model, checkin.getHumor());
+
         try {
             ResponseCreateParams params = ResponseCreateParams.builder()
                     .model(model)

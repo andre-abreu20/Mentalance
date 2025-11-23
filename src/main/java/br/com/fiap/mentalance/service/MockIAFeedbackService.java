@@ -3,6 +3,7 @@ package br.com.fiap.mentalance.service;
 import br.com.fiap.mentalance.model.Analise;
 import br.com.fiap.mentalance.model.Checkin;
 import br.com.fiap.mentalance.model.EstadoHumor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Locale;
 
 @Service
+@Slf4j
 @ConditionalOnProperty(value = "openai.enabled", havingValue = "false", matchIfMissing = true)
 public class MockIAFeedbackService implements IAFeedbackService {
 
@@ -32,6 +34,9 @@ public class MockIAFeedbackService implements IAFeedbackService {
     @Override
     public Analise gerarAnalise(Checkin checkin, Locale locale) {
         boolean english = locale != null && locale.getLanguage().startsWith("en");
+
+        log.info("Análise de IA gerada usando serviço MOCK (OpenAI não configurado): checkinId={}, usuarioId={}, humor={}",
+                checkin.getId(), checkin.getUsuario() != null ? checkin.getUsuario().getId() : null, checkin.getHumor());
 
         Analise analise = new Analise();
         analise.setCheckin(checkin);
