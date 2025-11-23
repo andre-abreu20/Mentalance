@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -45,6 +46,16 @@ public class InternacionalizacaoConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Garante que recursos estáticos sejam servidos corretamente
+        registry.addResourceHandler("/css/**", "/js/**", "/images/**", "/i18n/**")
+                .addResourceLocations("classpath:/static/css/", 
+                                     "classpath:/static/js/", 
+                                     "classpath:/static/images/", 
+                                     "classpath:/i18n/");
     }
 }
 
